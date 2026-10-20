@@ -17,6 +17,7 @@ export const getCustomerStats= ()       => axios.get(`${BASE}/customers/stats`, 
 export const createCustomer  = (data)   => axios.post(`${BASE}/customers`,   data, { headers: h() });
 export const updateCustomer  = (id, d)  => axios.put(`${BASE}/customers/${id}`, d, { headers: h() });
 export const deleteCustomer  = (id)     => axios.delete(`${BASE}/customers/${id}`, { headers: h() });
+export const createCustomerAppLogin = (data) => axios.post(`${BASE}/customer-auth/register`, data, { headers: h() });
 
 // Projects
 export const getProjects     = ()       => axios.get(`${BASE}/projects`,     { headers: h() });
