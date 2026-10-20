@@ -124,3 +124,14 @@ export const deleteUser      = (id)     => axios.delete(`${BASE}/users/${id}`, {
 // Settings
 export const getSettings     = ()       => axios.get(`${BASE}/settings`,     { headers: h() });
 export const updateSettings  = (data)   => axios.put(`${BASE}/settings`,     data, { headers: h() });
+
+// Roles
+export const getRoles        = ()       => axios.get(`${BASE}/roles`,        { headers: h() });
+export const createRole      = (data)   => axios.post(`${BASE}/roles`,       data, { headers: h() });
+export const updateRole      = (id, d)  => axios.put(`${BASE}/roles/${id}`,  d, { headers: h() });
+export const deleteRole      = (id)     => axios.delete(`${BASE}/roles/${id}`, { headers: h() });
+export const assignRoleToUser= (userId, roleId) => axios.post(`${BASE}/roles/assign-user`, { userId, roleId }, { headers: h() });
+
+// Assign users to a record
+export const assignUsers = (module, id, userIds) =>
+  axios.post(`${BASE}/${module}/${id}/assign`, { userIds }, { headers: h() });
