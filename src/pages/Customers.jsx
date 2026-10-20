@@ -46,7 +46,7 @@ export default function Customers() {
 
   const openLoginModal = (c) => {
     setLoginFor(c);
-    setLoginForm({ ...EMPTY_LOGIN, email: c.email || '' });
+    setLoginForm(EMPTY_LOGIN);
     setLoginMsg('');
   };
 
@@ -69,7 +69,12 @@ export default function Customers() {
       setLoginMsg('✓ App login created! The customer can now log in to elevatorX.');
       setLoginSaving(false);
     } catch (err) {
-      setLoginMsg(err.response?.data?.message || 'Failed to create login.');
+      const msg = err.response?.data?.message || 'Failed to create login.';
+      if (msg.toLowerCase().includes('already')) {
+        setLoginMsg('⚠ This email is already registered. Use a different email address, or ask the customer to use their existing login.');
+      } else {
+        setLoginMsg(msg);
+      }
       setLoginSaving(false);
     }
   };
