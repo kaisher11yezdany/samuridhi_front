@@ -67,13 +67,17 @@ export default function Settings() {
 
   // Role management state
   const [roles,       setRoles]      = useState([]);
+  const [rolesError,  setRolesError] = useState(false);
   const [selRole,     setSelRole]    = useState(null);  // currently edited role
   const [rolePerms,   setRolePerms]  = useState({});   // local copy of permissions being edited
   const [roleSaving,  setRoleSaving] = useState(false);
   const [newRoleName, setNewRoleName]= useState('');
   const [userRoles,   setUserRoles]  = useState({});   // { userId: roleId }
 
-  const loadRoles = () => getRoles().then(r => setRoles(r.data)).catch(() => {});
+  const loadRoles = () => {
+    setRolesError(false);
+    getRoles().then(r => setRoles(r.data)).catch(() => setRolesError(true));
+  };
 
   const loadCfg = () => getSettings().then(r => { setCfg(r.data); setForm(r.data); }).catch(() => {});
   const loadUsers = () => getUsers().then(r => setUsers(r.data)).catch(() => {});
@@ -99,8 +103,13 @@ export default function Settings() {
   );
 
   // ── User helpers ─────────────────────────────────────────────────────────
-  const openAdd  = () => { setEditUser(null); setUserForm(EMPTY_USER); setShowUF(true); };
-  const openEdit = (u) => { setEditUser(u); setUserForm({ name: u.name, username: u.username, email: u.email || '', role: u.role, password: '' }); setShowUF(true); };
+  const openAdd  = () => { setEditUser(null); setUserForm({ ...EMPTY_USER, roleId: '' }); setShowUF(true); };
+  const openEdit = (u) => {
+    setEditUser(u);
+    setUserForm({ name: u.name, username: u.username, email: u.email || '', role: u.role, password: '',
+                  roleId: userRoles[u._id] ?? (u.roleId?._id || u.roleId || '') });
+    setShowUF(true);
+  };
   const handleDel = async (u) => {
     if (!window.confirm(`Delete "${u.name}"?`)) return;
     try { await deleteUser(u._id); setUsers(p => p.filter(x => x._id !== u._id)); }
@@ -110,14 +119,20 @@ export default function Settings() {
     if (!userForm.name || !userForm.username) return alert('Name and username required');
     setUSaving(true);
     try {
+      const { roleId, ...basePayload } = userForm;
       if (editUser) {
-        const payload = userForm.password ? userForm : (({ password, ...rest }) => rest)(userForm);
+        const payload = basePayload.password ? basePayload : (({ password, ...rest }) => rest)(basePayload);
         const r = await updateUser(editUser._id, payload);
         setUsers(p => p.map(x => x._id === editUser._id ? r.data : x));
       } else {
-        if (!userForm.password) return alert('Password required for new users');
-        const r = await createUser(userForm);
+        if (!basePayload.password) return alert('Password required for new users');
+        const r = await createUser(basePayload);
         setUsers(p => [r.data, ...p]);
+      }
+      // If a custom permission role was selected, assign it
+      const uid = editUser ? editUser._id : null;
+      if (uid && roleId !== undefined) {
+        await saveUserRole(uid, roleId).catch(() => {});
       }
       setShowUF(false);
     } catch (e) { alert(e.response?.data?.message || 'Save failed'); }
@@ -202,11 +217,17 @@ export default function Settings() {
             <div style={{ display: 'grid', gap: '0.75rem' }}>
               <div style={sec}>{editUser ? `Edit — ${editUser.username}` : 'New User'}</div>
               {[['Full Name','name','text'],['Username','username','text'],['Email','email','email']].map(([l,k,t]) => (
-                <Field key={k} label={l}><input style={inp} type={t} value={userForm[k]} onChange={e => setUserForm(f => ({ ...f, [k]: e.target.value }))} /></Field>
+                <Field key={k} label={l}><input style={inp} type={t} value={userForm[k] ?? ''} onChange={e => setUserForm(f => ({ ...f, [k]: e.target.value }))} /></Field>
               ))}
               <Field label="System Role (base access level)">
                 <select style={inp} value={userForm.role} onChange={e => setUserForm(f => ({ ...f, role: e.target.value }))}>
                   {ROLES.map(r => <option key={r}>{r}</option>)}
+                </select>
+              </Field>
+              <Field label="Permission Profile (overrides base role)">
+                <select style={inp} value={userForm.roleId ?? ''} onChange={e => setUserForm(f => ({ ...f, roleId: e.target.value }))}>
+                  <option value="">— use base role defaults —</option>
+                  {roles.map(r => <option key={r._id} value={r._id}>{r.name}</option>)}
                 </select>
               </Field>
               <Field label={editUser ? 'New Password (blank = keep current)' : 'Password'}>
@@ -216,7 +237,7 @@ export default function Settings() {
           ) : (
             <div className="data-table" style={{ maxHeight: 380, overflowY: 'auto' }}>
               <table>
-                <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Custom Perms</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
                 <tbody>
                   {users.length > 0 ? users.map(u => (
                     <tr key={u._id}>
@@ -224,16 +245,12 @@ export default function Settings() {
                       <td style={{ fontFamily: 'monospace', fontSize: '0.88rem' }}>{u.username}</td>
                       <td><StatusBadge text={u.role} /></td>
                       <td>
-                        <select style={{ padding: '2px 4px', fontSize: '0.8rem', border: '1px solid #ddd', borderRadius: 4 }}
-                          value={userRoles[u._id] ?? (u.roleId?._id || u.roleId || '')}
-                          onChange={e => saveUserRole(u._id, e.target.value)}>
-                          <option value="">— default —</option>
-                          {roles.map(r => <option key={r._id} value={r._id}>{r.name}</option>)}
-                        </select>
+                        <a className="action-link" onClick={() => openEdit(u)}>Edit</a>
+                        {' | '}
+                        <a className="action-link orange" onClick={() => handleDel(u)}>Delete</a>
                       </td>
-                      <td><a className="action-link" onClick={() => openEdit(u)}>Edit</a>{' | '}<a className="action-link orange" onClick={() => handleDel(u)}>Delete</a></td>
                     </tr>
-                  )) : <tr><td colSpan={5} style={{ textAlign: 'center', padding: '1.5rem', color: '#999' }}>No users</td></tr>}
+                  )) : <tr><td colSpan={4} style={{ textAlign: 'center', padding: '1.5rem', color: '#999' }}>No users</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -251,6 +268,12 @@ export default function Settings() {
           }>
           {!selRole ? (
             <div>
+              {/* Error state */}
+              {rolesError && (
+                <div style={{ background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#856404' }}>
+                  ⚠️ Could not load roles from backend. Make sure your local backend server is running with the latest code, then <a style={{ color: '#1e3a5f', cursor: 'pointer', fontWeight: 600 }} onClick={loadRoles}>retry</a>.
+                </div>
+              )}
               {/* Role list */}
               <div style={{ display: 'grid', gap: '0.5rem', marginBottom: '1rem' }}>
                 {roles.map(r => (
