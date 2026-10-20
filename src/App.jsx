@@ -62,7 +62,7 @@ function AppRoutes() {
         <Route path="auditlogs"     element={<AuditLogs />} />
         <Route path="settings"      element={<Settings />} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

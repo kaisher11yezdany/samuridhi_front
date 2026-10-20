@@ -34,13 +34,6 @@ export function AuthProvider({ children }) {
       setTimeout(refreshUnread, 200);
       return u;
     } catch (err) {
-      if (username === 'admin' && password === 'Admin@123') {
-        const demoUser = { name: 'Admin User', role: 'Super Admin', username: 'admin' };
-        localStorage.setItem('token', 'demo-token');
-        localStorage.setItem('user', JSON.stringify(demoUser));
-        setUser(demoUser);
-        return demoUser;
-      }
       throw err;
     }
   };
