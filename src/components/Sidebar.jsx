@@ -1,36 +1,37 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+// roles: 'Super Admin' | 'Management' | 'Project Manager' | 'Technician'
 const NAV = [
-  { section: 'Menu' },
-  { to: '/dashboard',      icon: '📊', label: 'Dashboard' },
-  { to: '/notifications',  icon: '🔔', label: 'Notifications' },
-  { section: 'Customer & Projects' },
-  { to: '/customers',      icon: '👥', label: 'Customers' },
-  { to: '/projects',       icon: '📁', label: 'Projects' },
-  { to: '/sites',          icon: '🏢', label: 'Sites' },
-  { section: 'Operations' },
-  { to: '/survey',         icon: '🔍', label: 'Survey & Inspection' },
-  { to: '/installation',   icon: '🔨', label: 'Installation' },
-  { to: '/procurement',    icon: '🛒', label: 'Procurement' },
-  { to: '/qa',             icon: '✅', label: 'QA & Commissioning' },
-  { to: '/handover',       icon: '🤝', label: 'Handover' },
-  { section: 'Asset Management' },
-  { to: '/elevators',      icon: '🛗', label: 'Elevators' },
-  { to: '/maintenance',    icon: '🔧', label: 'Maintenance' },
-  { to: '/breakdown',      icon: '🆘', label: 'Breakdown Service' },
-  { to: '/technicians',    icon: '👨‍🔧', label: 'Technicians' },
-  { section: 'Service' },
-  { to: '/testing',        icon: '📝', label: 'Testing & Commission' },
-  { to: '/warranty',       icon: '📋', label: 'Warranty & AMC' },
-  { to: '/spareparts',     icon: '📦', label: 'Spare Parts' },
-  { section: 'Management' },
-  { to: '/documents',      icon: '📂', label: 'Documents' },
-  { to: '/approvals',      icon: '✔️',  label: 'Approvals' },
-  { to: '/reports',        icon: '📈', label: 'Reports & Analytics' },
-  { to: '/auditlogs',      icon: '🛡️',  label: 'Audit Logs' },
-  { section: 'Settings & More' },
-  { to: '/settings',       icon: '⚙️',  label: 'Settings' },
+  { section: 'Menu', roles: ['Super Admin','Management','Project Manager','Technician'] },
+  { to: '/dashboard',      icon: '📊', label: 'Dashboard',             roles: ['Super Admin','Management','Project Manager','Technician'] },
+  { to: '/notifications',  icon: '🔔', label: 'Notifications',         roles: ['Super Admin','Management','Project Manager','Technician'] },
+  { section: 'Customer & Projects', roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/customers',      icon: '👥', label: 'Customers',             roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/projects',       icon: '📁', label: 'Projects',              roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/sites',          icon: '🏢', label: 'Sites',                 roles: ['Super Admin','Management','Project Manager'] },
+  { section: 'Operations', roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/survey',         icon: '🔍', label: 'Survey & Inspection',   roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/installation',   icon: '🔨', label: 'Installation',          roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/procurement',    icon: '🛒', label: 'Procurement',           roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/qa',             icon: '✅', label: 'QA & Commissioning',    roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/handover',       icon: '🤝', label: 'Handover',              roles: ['Super Admin','Management','Project Manager'] },
+  { section: 'Asset Management', roles: ['Super Admin','Management','Project Manager','Technician'] },
+  { to: '/elevators',      icon: '🛗', label: 'Elevators',             roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/maintenance',    icon: '🔧', label: 'Maintenance',           roles: ['Super Admin','Management','Project Manager','Technician'] },
+  { to: '/breakdown',      icon: '🆘', label: 'Breakdown Service',     roles: ['Super Admin','Management','Project Manager','Technician'] },
+  { to: '/technicians',    icon: '👨‍🔧', label: 'Technicians',           roles: ['Super Admin','Management'] },
+  { section: 'Service', roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/testing',        icon: '📝', label: 'Testing & Commission',  roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/warranty',       icon: '📋', label: 'Warranty & AMC',        roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/spareparts',     icon: '📦', label: 'Spare Parts',           roles: ['Super Admin','Management','Project Manager','Technician'] },
+  { section: 'Management', roles: ['Super Admin','Management'] },
+  { to: '/documents',      icon: '📂', label: 'Documents',             roles: ['Super Admin','Management','Project Manager'] },
+  { to: '/approvals',      icon: '✔️',  label: 'Approvals',             roles: ['Super Admin','Management'] },
+  { to: '/reports',        icon: '📈', label: 'Reports & Analytics',   roles: ['Super Admin','Management'] },
+  { to: '/auditlogs',      icon: '🛡️',  label: 'Audit Logs',            roles: ['Super Admin'] },
+  { section: 'Settings & More', roles: ['Super Admin'] },
+  { to: '/settings',       icon: '⚙️',  label: 'Settings',              roles: ['Super Admin'] },
 ];
 
 export default function Sidebar() {
@@ -83,7 +84,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <ul className="nav-menu">
-        {NAV.map((item, i) => {
+        {NAV.filter(item => item.roles?.includes(user?.role)).map((item, i) => {
           if (item.section) {
             return (
               <li key={`s-${i}`} className="nav-section-label">
