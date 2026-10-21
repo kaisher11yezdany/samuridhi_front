@@ -38,10 +38,14 @@ export const createElevator  = (data)   => axios.post(`${BASE}/elevators`,   dat
 export const updateElevator  = (id, d)  => axios.put(`${BASE}/elevators/${id}`, d, { headers: h() });
 
 // Technicians
-export const getTechnicians  = ()       => axios.get(`${BASE}/technicians`,  { headers: h() });
-export const createTechnician= (data)   => axios.post(`${BASE}/technicians`, data, { headers: h() });
-export const updateTechnician= (id, d)  => axios.put(`${BASE}/technicians/${id}`, d, { headers: h() });
-export const deleteTechnician= (id)     => axios.delete(`${BASE}/technicians/${id}`, { headers: h() });
+export const getTechnicians       = ()          => axios.get(`${BASE}/technicians`,  { headers: h() });
+export const createTechnician     = (data)      => axios.post(`${BASE}/technicians`, data, { headers: h() });
+export const updateTechnician     = (id, d)     => axios.put(`${BASE}/technicians/${id}`, d, { headers: h() });
+export const deleteTechnician     = (id)        => axios.delete(`${BASE}/technicians/${id}`, { headers: h() });
+export const getTechDocs          = (id)        => axios.get(`${BASE}/technicians/${id}/documents`, { headers: h() });
+export const uploadTechDoc        = (id, form)  => axios.post(`${BASE}/technicians/${id}/documents`, form, { headers: { ...h(), 'Content-Type': 'multipart/form-data' } });
+export const updateTechDoc        = (id, docId, d) => axios.put(`${BASE}/technicians/${id}/documents/${docId}`, d, { headers: h() });
+export const deleteTechDoc        = (id, docId) => axios.delete(`${BASE}/technicians/${id}/documents/${docId}`, { headers: h() });
 
 // Breakdown
 export const getBreakdowns   = ()       => axios.get(`${BASE}/breakdowns`,   { headers: h() });
